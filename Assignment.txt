@@ -1,0 +1,68 @@
+/**
+ * Create a command line program that can search on the occurrence of a word in a text file. You can use Jabberwocky.txt
+ * as an example.
+ * 
+ * Answer the following questions:
+    1. Which considerations did you make before creating the program? 
+    2. What do you like / dislike in the result?
+ * 
+ * Requirements: a user should provide two required arguments on the command line specifying:
+ *  1) The keyword to search on
+ *  2) The file name to search in
+ *  
+ * Words are separated from each other by whitespace(s) (or the beginning or the end of the file)
+ *  
+ * Optionally the following arguments can be provided on the command line
+ *  'part' : indicates that the keyword can match on parts of the words in the text file. If this argument is not present,
+ *  the word should match a whole word in the text file. 
+ *  'ci'    : indicates that the search should be case insensitive. If this argument is not present, the search
+ *  will be performed on a case sensitive manner.
+ *  
+ * As an example, lets assume the text file 'Jabberwocky.txt' has the following content:
+ * 
+    "Beware the Jabberwock, my son 
+       The jaws that bite, the claws that catch!
+    Beware the Jubjub bird, and shun 
+       The frumious Bandersnatch!"
+    
+    He took his vorpal sword in hand; 
+       Long time the manxome foe he sought-
+    So rested he by the Tumtum tree, 
+       And stood awhile in thought.
+ * 
+ * Now the user can run the program 'WordSearcher' with the command: 'java -jar WordSearcher.jar he Text.txt'
+ * Which will search in the text file 'Text.txt' for the exact occurrence of the word 'he'. 
+ * 
+ * The result of the program is the following text on the command line:
+ * 
+    Found 2 occurrences of the keyword 'he' in 'Jabberwocky.txt'
+    6   Long time the manxome foe he sought-
+        --------------------------^^
+    7   So rested he by the Tumtum tree,
+        ----------^^
+ * 
+ * Thus the program shows the line number the keyword is found on and points to the exact place in the text it found the keyword.
+ * Please note that only the lines where the keyword is found are shown on the screen.
+ * 
+ * Now the user wants to search on parts of the words, thus he executes the command 'java -jar WordSearcher.jar he Text.txt part'
+ * This should result in the following:
+ *  
+    0  "Beware the Jabberwock, my son
+        --------^^^
+    1   The jaws that bite, the claws that catch!
+        ^^^-----------------^^^
+    2   Beware the Jubjub bird, and shun
+        -------^^^
+    3   The frumious Bandersnatch!"
+        ^^^
+    6   Long time the manxome foe he sought-
+        ----------^^^-------------^^
+    7   So rested he by the Tumtum tree,
+        ----------^^----^^^
+ * 
+ * The user can also search case insensitive way using the command 'java -jar WordSearcher.jar he Text.txt part ci' which in addition 
+ * to the results above, will find the occurrence of the word 'He' on line 5:
+ * 
+     5  He took his vorpal sword in hand;
+        ^^
+ */
