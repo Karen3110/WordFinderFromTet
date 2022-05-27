@@ -6,42 +6,51 @@ package com.company;
 //Step 2 : Select Edit Configurations
 //Step 3 : Fill the Program arguments field
 public class Main {
-    public static String keyWord;
-    public static String fileName;
+
 
     public static void main(String[] args) {
 
-        if (!validate(args)) {
-            throw new IllegalArgumentException("arguments are not valid, please re correct argument list");
-        }
-        keyWord = args[0];
-        fileName = args[1];
+
+        validate(args);
+
+        WordFinder object;
 
         switch (args.length) {
+            default:
             case 2:
-                WordFinder.startWorking();
+                object = new WordFinder(args[0], args[1]);
                 break;
             case 3:
-                WordFinder.startWorking(false);
+                object = new WordFinder(args[0], args[1], true);
                 break;
             case 4:
-                WordFinder.startWorking(true, true);
+                object = new WordFinder(args[0], args[1], false);
                 break;
         }
+
+        object.startWorking();
+
 
     }
 
-    private static boolean validate(String[] args) {
+    private static void validate(String[] args) {
 
         switch (args.length) {
             case 2:
-                return true;
+                return;
             case 3:
-                return args[2].equals("part");
+                if (!args[2].equals("part")) {
+                    throw new IllegalArgumentException("arguments are not valid, please re correct argument list");
+                }
+                break;
             case 4:
-                return args[2].equals("part") && args[3].equals("ci");
+                if (!(args[2].equals("part") && args[3].equals("ci"))) {
+                    throw new IllegalArgumentException("arguments are not valid, please re correct argument list");
+                }
+                break;
             default:
-                return false;
+                throw new IllegalArgumentException("arguments are not valid, please re correct argument list");
+
 
         }
     }

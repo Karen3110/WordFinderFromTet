@@ -2,32 +2,61 @@ package com.company;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class WordFinder {
 
-    private static final List<String> data = new LinkedList<>();
-    /**
-     * is map with lines which line is containing static field keyWord
-     * *                     the values are represented with <lineNumber,lineText> pairs
-     */
-    private static final Map<Integer, String> linesWithKey;
+    private final List<String> data;
+    private final Map<Integer, String> linesWithKey;
 
-    public static final String fileName = File.separator + Main.fileName;
-    public static final String keyWord = Main.keyWord;
+    private final boolean isPart;
+    private final boolean isSensitive;
+
+    private static String fileName;
+    private static String keyWord;
 
 
-    static {
-        readFromFile();
-        linesWithKey = findLinesWithKey();
+    private Function<String, Boolean> notPartAndSensitive = (value) -> value.equals(keyWord);
+    private Function<String, Boolean> partAndSensitive = (value) -> value.contains(keyWord);
+    private Function<String, Boolean> partAndNotSnesitive = (value) -> value.toLowerCase(Locale.ROOT).contains(keyWord);
+
+
+    public WordFinder(final String keyWord, final String fileName) {
+        WordFinder.keyWord = keyWord;
+        WordFinder.fileName = File.separator + fileName;
+        isPart = false;
+        isSensitive = true;
+
+        this.data = readFromFile();
+        this.linesWithKey = findLinesWithKey();
+
+    }
+
+    public WordFinder(final String keyWord, final String fileName, final boolean partAndIsSensitive) {
+
+        WordFinder.fileName = File.separator + fileName;
+        WordFinder.keyWord = keyWord;
+        if (partAndIsSensitive) {
+            this.isPart = true;
+            this.isSensitive = true;
+        } else {
+            this.isPart = true;
+            this.isSensitive = false;
+        }
+
+        this.data = readFromFile();
+        this.linesWithKey = findLinesWithKey();
+
+
     }
 
 
     /**
-     * @return map with lines, which line is containing keyWord
+     * method determines which line is containing keyWord
      * *                     the values are represented with <lineNumber,lineText> pairs
      */
-    private static Map<Integer, String> findLinesWithKey() {
+    private Map<Integer, String> findLinesWithKey() {
         Map<Integer, String> foundedLines = new HashMap<>();
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).toLowerCase(Locale.ROOT).contains(keyWord)) {
@@ -40,12 +69,14 @@ public class WordFinder {
     /**
      * methods reads file data line by line and adds it to data list with type of List<String>>
      */
-    private static void readFromFile() {
-        try (Scanner scanner = new Scanner(Main.class.getResourceAsStream(fileName))) {
+    private List<String> readFromFile() {
+        List<String> data = new LinkedList<>();
+        try (Scanner scanner = new Scanner(Main.class.getResourceAsStream(WordFinder.fileName))) {
             while (scanner.hasNextLine()) {
                 data.add(scanner.nextLine());
             }
         }
+        return data;
     }
 
     /***
@@ -56,8 +87,7 @@ public class WordFinder {
      * @return filtered data
      */
 
-    // TODO may be there is a more compact way to do filtration, need to review it
-    private static Map<Integer, String> doFiltration(final boolean isPart, final boolean isCaseSensitive) {
+    private Map<Integer, String> doFiltration(final boolean isPart, final boolean isCaseSensitive) {
         Map<Integer, String> filteredData = new HashMap<>();
         for (Map.Entry<Integer, String> entry : linesWithKey.entrySet()) {
             // not part and case sensitive
@@ -71,7 +101,9 @@ public class WordFinder {
                 if (entry.getValue().contains(keyWord)) {
                     filteredData.put(entry.getKey(), entry.getValue());
                 }
-            } else if (isPart) {
+            }
+            // part adn not sensitve
+            else if (isPart) {
                 return linesWithKey;
             }
         }
@@ -79,114 +111,64 @@ public class WordFinder {
     }
 
 
-    /***
-     * params are passed from terminal.
-     * this overload reads and finds only keyWord from fileName.
-     * the search process will work without "part" and with "case sensitivity"
-     */
-    public static void startWorking() {
-
-        Map<Integer, String> filteredData = doFiltration(false, true);
-        printer(filteredData, false, true);
-
-    }
-
-    /***
-     * params are passed from terminal.
-     * this overload reads and finds only keyWord from fileName.
-     * the search process will work with "part" and with "case sensitivity"
-     */
-    public static void startWorking(boolean isPart) {
-        Map<Integer, String> filteredData = doFiltration(true, true);
-        printer(filteredData, true, true);
-
-    }
-
-    /***
-     * params are passed from terminal.
-     * this overload reads and finds only keyWord from fileName.
-     * the search process will work with "part" and without "case sensitivity"
-     */
-    public static void startWorking(boolean isPart, boolean isCaseSensitive) {
-        Map<Integer, String> filteredData = doFiltration(true, false);
-        printer(filteredData, true, false);
-    }
-
-
-    private static void printer(Map<Integer, String> filteredData, boolean isPart, boolean isCaseSensitive) {
+    private void printer(Map<Integer, String> filteredData, boolean isPart, boolean isCaseSensitive) {
         for (Map.Entry<Integer, String> entry : filteredData.entrySet()) {
-            Integer key = entry.getKey();
+            Integer lineNumber = entry.getKey();
             String value = entry.getValue();
-            System.out.println(key + "\t" + value);
-
+            System.out.println(lineNumber + "\t" + value);
             linePrinter(value, isPart, isCaseSensitive);
 
         }
     }
 
-    // TODO may be there is a more compact way to print lines, need to refactor it
-    private static void linePrinter(String text, boolean isPart, boolean isCaseSensitive) {
+    private void linePrinter(String text, boolean isPart, boolean isCaseSensitive) {
         System.out.print("\t");
         String[] s = text.split(" ");
 
         // not part and case sensitive
         if (!isPart && isCaseSensitive) {
-            for (int j = 0; j < s.length; j++) {
-                String item = s[j];
-                if (item.equals(keyWord)) {
-                    for (int i = 0; i < item.length(); i++) {
-                        System.out.print("^");
-                    }
-                } else {
-                    for (int i = 0; i < item.length(); i++) {
-                        System.out.print("-");
-                    }
-                }
-                if (j < s.length - 1) {
-                    System.out.print("-");
-                }
-            }
+            lineModifier(s, notPartAndSensitive);
         }
         // is part and is case sensitive
         else if (isPart && isCaseSensitive) {
-
-            for (int j = 0; j < s.length; j++) {
-                String item = s[j];
-                if (item.contains(keyWord)) {
-                    for (int i = 0; i < item.length(); i++) {
-                        System.out.print("^");
-                    }
-                } else {
-                    for (int i = 0; i < item.length(); i++) {
-                        System.out.print("-");
-                    }
-                }
-                if (j < s.length - 1) {
-                    System.out.print("-");
-                }
-            }
-
+            lineModifier(s, partAndSensitive);
         }
         // is part and not case sensitive
         else if (isPart) {
-
-            for (int j = 0; j < s.length; j++) {
-                String item = s[j];
-                if (item.toLowerCase(Locale.ROOT).contains(keyWord)) {
-                    for (int i = 0; i < item.length(); i++) {
-                        System.out.print("^");
-                    }
-                } else {
-                    for (int i = 0; i < item.length(); i++) {
-                        System.out.print("-");
-                    }
-                }
-                if (j < s.length - 1) {
-                    System.out.print("-");
-                }
-            }
+            lineModifier(s, partAndNotSnesitive);
         }
-
-        System.out.println();
     }
+
+    /**
+     * method dynamically determains what kind of symbol to add in console
+     * @param s is line for which will determined cursor
+     * @param function is lambda method which is connected to CommandLine arguments
+     */
+    private void lineModifier(String[] s, Function function) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String item : s) {
+            stringBuilder.append(((boolean) function.apply(item) ? "^" : "-").repeat(item.length()));
+            stringBuilder.append("-");
+        }
+        stringBuilder.setLength(stringBuilder.length() - 1);
+        System.out.println(stringBuilder.toString());
+    }
+
+
+
+    /***
+     * params are passed from terminal.
+     * this overload reads and finds only keyWord from fileName.
+     * the search process will work without "part" and with "case sensitivity"
+     */
+    public void startWorking() {
+
+        final Map<Integer, String> filteredData = doFiltration(isPart, isSensitive);
+        printer(filteredData, isPart, isSensitive);
+
+    }
+
+
+
+
 }
